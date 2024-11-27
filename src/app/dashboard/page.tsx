@@ -19,7 +19,7 @@ export default function Dashboard() {
         <h1 className='text-3xl font-semibold'>Invoices</h1>
         <p>
           <Button className='inline-flex gap-2' variant='ghost' asChild>
-            <Link href='/dashboard/new'>
+            <Link href='/invoices/new'>
               <CirclePlus className='h-4 w-4' />
               Create Invoice
             </Link>
