@@ -1,5 +1,9 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CirclePlus } from "lucide-react";
+import { db } from "@/db";
+import { Invoices } from "@/db/schema";
 import {
   Table,
   TableBody,
@@ -9,10 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus } from "lucide-react";
-import Link from "next/link";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const results = await db.select().from(Invoices);
+
+  console.log(results);
+
   return (
     <main className='flex flex-col justify-center gap-6 h-full text-center max-w-5xl mx-auto my-12'>
       <div className='flex justify-between'>
@@ -38,23 +44,44 @@ export default function Dashboard() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell className='font-medium text-left p-4'>
-              <span className='font-semibold'>10/11/2022</span>
-            </TableCell>
-            <TableCell className='text-left p-4'>
-              <span className='font-semibold'>Philip j. Fry</span>
-            </TableCell>
-            <TableCell className='text-left p-4'>
-              <span className=''>fry@planetexpress.com</span>
-            </TableCell>
-            <TableCell className='text-center p-4'>
-              <Badge className='rounded-full'>Open</Badge>
-            </TableCell>
-            <TableCell className='text-right p-4'>
-              <span className=''>$250.00</span>
-            </TableCell>
-          </TableRow>
+          {results.map((result) => (
+            <TableRow key={result.id}>
+              <TableCell className='p-0 font-medium text-left'>
+                <Link
+                  href={`/invoices/${result.id}`}
+                  className='block p-4 font-semibold'
+                >
+                  {new Date(result.createTs).toLocaleDateString("en-UK")}
+                </Link>
+              </TableCell>
+              <TableCell className='p-0 text-left'>
+                <Link
+                  href={`/invoices/${result.id}`}
+                  className='block p-4 font-semibold'
+                >
+                  Philip j. Fry
+                </Link>
+              </TableCell>
+              <TableCell className='p-0 text-left'>
+                <Link href={`/invoices/${result.id}`} className='block p-4'>
+                  fry@planetexpress.com
+                </Link>
+              </TableCell>
+              <TableCell className='p-0 text-center'>
+                <Link href={`/invoices/${result.id}`} className='block p-4'>
+                  <Badge className='rounded-full'>{result.status}</Badge>
+                </Link>
+              </TableCell>
+              <TableCell className='p-0 text-right'>
+                <Link
+                  href={`/invoices/${result.id}`}
+                  className='block p-4 font-semibold'
+                >
+                  ${(result.value / 100).toFixed(2)}
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </main>
