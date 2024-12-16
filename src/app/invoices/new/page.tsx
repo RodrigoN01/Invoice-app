@@ -1,27 +1,23 @@
 "use client";
 
+import Form from "next/form";
 import { SyntheticEvent, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createAction } from "@/app/actions";
+import SubmitButton from "@/components/SubmitButton";
 
 export default function Invoices() {
   const [state, setState] = useState("ready");
 
   async function handleOnSubmit(event: SyntheticEvent) {
-    event.preventDefault();
-
     if (state === "pending") {
+      event.preventDefault();
       return;
     }
 
     setState("pending");
-
-    const target = event.target as HTMLFormElement;
-    const formData = new FormData(target);
-    await createAction(formData);
   }
 
   return (
@@ -30,7 +26,7 @@ export default function Invoices() {
         <h1 className='text-3xl font-semibold'>Create Invoice</h1>
       </div>
 
-      <form
+      <Form
         action={createAction}
         onSubmit={handleOnSubmit}
         className='grid gap-4 max-w-xs'
@@ -63,9 +59,9 @@ export default function Invoices() {
           <Textarea id='description' name='description' />
         </div>
         <div>
-          <Button className='w-full font-semibold'>Submit</Button>
+          <SubmitButton />
         </div>
-      </form>
+      </Form>
     </main>
   );
 }
