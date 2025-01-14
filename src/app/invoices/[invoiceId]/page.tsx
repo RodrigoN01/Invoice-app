@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
 import { cn } from "@/lib/utils";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
 export default async function InvoicePage({
@@ -10,6 +11,12 @@ export default async function InvoicePage({
 }: {
   params: { invoiceId: string };
 }) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return;
+  }
+
   const invoiceId = Number(params.invoiceId);
 
   if (isNaN(invoiceId)) {
@@ -19,7 +26,7 @@ export default async function InvoicePage({
   const [result] = await db
     .select()
     .from(Invoices)
-    .where(eq(Invoices.id, invoiceId))
+    .where(and(eq(Invoices.userId, userId), eq(Invoices.id, invoiceId)))
     .limit(1);
 
   if (!result) {
