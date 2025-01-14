@@ -8,6 +8,13 @@
       "when": 1733682207693,
       "tag": "0000_tricky_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1736884501850,
+      "tag": "0001_nifty_speedball",
+      "breakpoints": true
     }
   ]
 }
