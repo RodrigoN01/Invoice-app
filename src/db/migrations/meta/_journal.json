@@ -15,6 +15,13 @@
       "when": 1736884501850,
       "tag": "0001_nifty_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737197751490,
+      "tag": "0002_vengeful_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }
