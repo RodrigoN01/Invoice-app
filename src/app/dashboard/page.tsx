@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { db } from "@/db";
 import { auth } from "@clerk/nextjs/server";
-import { Invoices } from "@/db/schema";
+import { Customers, Invoices } from "@/db/schema";
 import {
   Table,
   TableBody,
@@ -28,7 +28,15 @@ export default async function Dashboard() {
   const results = await db
     .select()
     .from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
     .where(eq(Invoices.userId, userId));
+
+  const invoices = results?.map(({ invoices, customers }) => {
+    return {
+      ...invoices,
+      customer: customers,
+    };
+  });
 
   return (
     <main className='h-full'>
@@ -56,7 +64,7 @@ export default async function Dashboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((result) => (
+            {invoices.map((result) => (
               <TableRow key={result.id}>
                 <TableCell className='p-0 font-medium text-left'>
                   <Link
@@ -71,12 +79,12 @@ export default async function Dashboard() {
                     href={`/invoices/${result.id}`}
                     className='block p-4 font-semibold'
                   >
-                    Philip j. Fry
+                    {result.customer.name}
                   </Link>
                 </TableCell>
                 <TableCell className='p-0 text-left'>
                   <Link href={`/invoices/${result.id}`} className='block p-4'>
-                    fry@planetexpress.com
+                    {result.customer.email}
                   </Link>
                 </TableCell>
                 <TableCell className='p-0 text-center'>
