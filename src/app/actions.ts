@@ -6,6 +6,9 @@ import { revalidatePath } from "next/cache";
 import { Customers, Invoices, Status } from "@/db/schema";
 import { db } from "@/db";
 import { and, eq, isNull } from "drizzle-orm";
+import Stripe from "stripe";
+
+const stripe = new Stripe(String(process.env.STRIPE_API_SECRET));
 
 export async function createAction(formData: FormData) {
   const { userId, orgId } = await auth();
@@ -105,4 +108,17 @@ export async function deleteInvoiceAction(formData: FormData) {
   }
 
   redirect("/dashboard");
+}
+
+export async function createPayment(formData: FormData) {
+  const id = parseInt(formData.get("id") as string);
+
+  const [result] = await db
+    .select({
+      status: Invoices.status,
+      value: Invoices.value,
+    })
+    .from(Invoices)
+    .where(eq(Invoices.id, id))
+    .limit(1);
 }
