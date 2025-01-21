@@ -7,9 +7,12 @@ import { Customers, Invoices, Status } from "@/db/schema";
 import { db } from "@/db";
 import { and, eq, isNull } from "drizzle-orm";
 import Stripe from "stripe";
+import { Resend } from "resend";
 import { headers } from "next/headers";
+import { InvoiceCreatedEmail } from "@/emails/invoice-created";
 
 const stripe = new Stripe(String(process.env.STRIPE_API_SECRET));
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function createAction(formData: FormData) {
   const { userId, orgId } = await auth();
@@ -44,6 +47,13 @@ export async function createAction(formData: FormData) {
       organizationId: orgId || null,
     })
     .returning({ id: Invoices.id });
+
+  const { data, error } = await resend.emails.send({
+    from: "Invoicipedia <invoice.app@resend.dev>",
+    to: [email],
+    subject: "You have a new invoice",
+    react: InvoiceCreatedEmail({ invoiceId: results[0].id }),
+  });
 
   redirect(`/invoices/${results[0].id}`);
 }
