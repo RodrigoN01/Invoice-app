@@ -7,18 +7,48 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Check, CreditCard } from "lucide-react";
-import { createPayment } from "@/app/actions";
+import { createPayment, updateStatusAction } from "@/app/actions";
+import { Stripe } from "stripe";
+
+const stripe = new Stripe(String(process.env.STRIPE_API_SECRET));
+
+interface InvoicePageProps {
+  params: { invoiceId: string };
+  searchParams: {
+    status: string;
+    session_id: string;
+  };
+}
 
 export default async function Invoice({
   params,
-}: {
-  params: { invoiceId: string };
-}) {
+  searchParams,
+}: InvoicePageProps) {
   const { invoiceId: invoiceIdParam } = await params;
   const invoiceId = Number.parseInt(invoiceIdParam);
 
+  const { session_id: sessionId, status } = await searchParams;
+  const isSuccess = sessionId && status === "success";
+  const isCanceled = status === "canceled";
+  let isError = isSuccess && !sessionId;
+
   if (isNaN(invoiceId)) {
     throw new Error("Invalid invoice id");
+  }
+
+  if (isSuccess) {
+    const { payment_status } = await stripe.checkout.sessions.retrieve(
+      sessionId
+    );
+
+    if (payment_status !== "paid") {
+      isError = true;
+    } else {
+      const formData = new FormData();
+      formData.append("id", String(invoiceId));
+      formData.append("status", "paid");
+      await updateStatusAction(formData);
+    }
   }
 
   const [result] = await db
@@ -49,6 +79,16 @@ export default async function Invoice({
   return (
     <main className='w-full h-full'>
       <Container>
+        {isError && (
+          <p className='bg-red-100 text-sm text-red-800 text-center px-3 py-2 rounded-lg mb-6'>
+            Something went wrong, please try again.
+          </p>
+        )}
+        {isCanceled && (
+          <p className='bg-yellow-100 text-sm text-yellow-800 text-center px-3 py-2 rounded-lg mb-6'>
+            Payment was canceled, please try again.
+          </p>
+        )}
         <div className='grid grid-cols-2'>
           <div>
             <div className='flex justify-between mb-8'>
